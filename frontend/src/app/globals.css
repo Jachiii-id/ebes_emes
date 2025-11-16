@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-montserrat);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-montserrat), sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+/* Hide Next.js development indicator (logo "N") */
+[data-nextjs-toast],
+[id*="__next-build-watcher"],
+[id*="nextjs-portal"],
+[id*="__nextjs"],
+div[style*="position: fixed"][style*="bottom"][style*="left"],
+div[style*="position: fixed"][style*="left: 0"][style*="bottom: 0"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Hide Next.js overlay/indicator lebih spesifik */
+body > div[id*="__next"] > div[style*="position: fixed"][style*="bottom"] {
+  display: none !important;
+}
+
+/* Hide semua elemen fixed di pojok kiri bawah yang mengandung logo N */
+a[href*="vercel"],
+div[style*="z-index"][style*="bottom: 0"][style*="left: 0"] {
+  display: none !important;
+}
