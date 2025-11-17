@@ -29,7 +29,7 @@ export default function DashboardLayout({ children }) {
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4 border-b">
           {sidebarOpen && (
-            <h1 className="text-xl font-bold text-gray-800">EMES-EBES</h1>
+            <img src="/emeb_black.svg" alt="EMES-EBES Logo" className="w-24 ml-4 object-contain"/>
           )}
            <button
               onClick={() => setSidebarOpen(!sidebarOpen)}

@@ -11,21 +11,25 @@ export default function Home() {
           
           {/* Left Navigation */}
           <div className="flex items-center gap-6 text-white">
+            <div></div>
+            <img src="emeb_white.svg" className="w-32 transition"/>
+          </div>
+
+          {/* Center Logo */}
+          <div className="text-white text-2xl font-bold me-28"></div>
+
+          {/* Right Dashboard Button */}
+          <div className="flex items-center gap-6 text-white">
             <a href="#" className="text-xl px-2 py-1 rounded-sm hover:bg-white hover:text-black transition">Home</a>
             <a href="#" className="text-xl px-2 py-1 rounded-sm hover:bg-white hover:text-black transition">About</a>
             <a href="#" className="text-xl px-2 py-1 rounded-sm hover:bg-white hover:text-black transition">Service</a>
             <a href="#" className="text-xl px-2 py-1 rounded-sm hover:bg-white hover:text-black transition">Media</a>
-          </div>
-
-          {/* Center Logo */}
-          <div className="text-white text-2xl font-bold me-28">EMES-EBES</div>
-
-          {/* Right Dashboard Button */}
-          <Link href="/dashboard">
+            <Link href="/dashboard">
             <button className="text-xl text-white py-2 px-4 rounded hover:bg-white hover:text-black transition hover:cursor-pointer">
               Dashboard
             </button>
           </Link>
+          </div>
         </nav>
       </header>
 
@@ -73,13 +77,13 @@ export default function Home() {
           <div className="flex flex-col md:flex-row gap-12 items-center">
             {/* Left Side - Bento Grid Images */}
             <div className="flex-1 grid grid-flow-col grid-rows-3 gap-4">
-              <img src="/about1.png" alt="About Image 1" className="w-100 h-50 object-cover" />
-              <img src="/about2.png" alt="About Image 2" className="w-100 h-50 object-cover" />
+              <img src="/about1.png" alt="About Image 1" className="w-100 h-50 object-cover rounded-sm" />
+              <img src="/about2.png" alt="About Image 2" className="w-100 h-50 object-cover rounded-sm" />
               <div className="w-100 h-50 flex gap-4 ">
-                <img src="/about3.png" alt="About Image 3" className="w-50 h-25 object-cover" />
-              <div className="w-50 h-25">LOGO</div>
+                <img src="/about3.png" alt="About Image 3" className="w-50 h-25 object-cover rounded-sm" />
+              <img src="/emeb_black.svg" alt="EMES-EBES Logo" className="w-50 h-25 object-contain" />
               </div>
-              <img src="/about4.png" alt="About Image 4" className="w-100 h-134 object-cover row-span-3" />
+              <img src="/about4.png" alt="About Image 4" className="w-100 h-134 object-cover row-span-3 rounded-sm" />
             </div>
 
             {/* Right Side - Text */}
@@ -277,7 +281,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-12">
             {/* Left Side */}
             <div>
-              <div className="text-4xl font-bold mb-4">Logo</div>
+              <img src="/emeb_white.svg" alt="EMES-EBES Logo" className="w-40 mb-8" />
               <p className="text-gray-400 text-md mb-6 leading-relaxed">
                 Platform ini membantu perusahaan mengelola emisi dengan data real time untuk operasi yang lebih efisien dan patuh regulasi.
               </p>
