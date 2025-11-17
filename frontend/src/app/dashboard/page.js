@@ -53,6 +53,14 @@ export default function DashboardPage() {
         <p className="text-gray-600">Overview of all monitoring data</p>
       </div>
 
+      <div className="relative w-full h-188">
+        <img src="/map.svg" alt="Map" className="absolute w-full h-180 object-cover mb-8 rounded-lg shadow" />
+        <div className='absolute w-fit rounded-lg ms-6 mt-6 bg-white shadow-md'>
+          <h1 className="text-3xl font-bold text-gray-600 p-4">PT. Mencari Cinta Sejati</h1>
+        </div>
+        
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {deviceStats.map((stat) => (
