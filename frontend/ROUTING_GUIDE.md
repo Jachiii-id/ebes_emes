@@ -203,3 +203,4 @@ echo "export default function Team() { return <div>Team Page</div> }" > src/app/
 
 Sekarang `/team` sudah bisa diakses! 🎉
 
+
