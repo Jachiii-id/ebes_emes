@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <div className="w-full min-h-screen bg-white">
       {/* Header Section */}
-      <header className="w-full md:w-auto lg:w-412 fixed md:ms-32 mt-2 md:mt-4 top-0 left-0 right-0 md:right-auto z-50 rounded-none md:rounded-xl" style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
+      <header className="w-[80%] fixed md:ms-32 mt-2 md:mt-4 top-0 left-0 right-0 md:right-auto z-50 rounded-none md:rounded-xl" style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
         <nav className="container mx-auto px-4 md:px-2 py-2 md:py-3 flex items-center justify-between">
           
           {/* Left Navigation */}

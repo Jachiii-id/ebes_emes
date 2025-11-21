@@ -1,82 +1,89 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import { apiService } from '../../../lib/api';
 
 export default function DevicesPage() {
-  const devices = [
-    {
-      id: 'edb45f58-d23f-44e4-83ec-d0b66b1052ff',
-      name: 'esp_edb45',
-      registered: '11/4/2025, 8:09:55 AM',
-      lastUpdated: '11/4/2025, 8:13:55 AM',
-      status: 'online',
-    },
-    {
-      id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-      name: 'esp_device2',
-      registered: '11/3/2025, 10:30:00 AM',
-      lastUpdated: '11/4/2025, 8:10:00 AM',
-      status: 'online',
-    },
-    {
-      id: 'b2c3d4e5-f6a7-8901-bcde-f23456789012',
-      name: 'esp_device3',
-      registered: '11/2/2025, 2:15:30 PM',
-      lastUpdated: '11/4/2025, 7:45:20 AM',
-      status: 'offline',
-    },
-  ];
+  const { data: devices, isLoading, error } = useQuery({
+    queryKey: ['devices'],
+    queryFn: apiService.getDevices,
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
 
+  if (isLoading) {
+    return (
+      <div className="p-8 bg-gray-50 min-h-screen text-center py-10 text-lg text-blue-600">
+        Loading devices...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 bg-gray-50 min-h-screen text-center py-10 text-lg text-red-600">
+        Error loading devices: {error.message}
+      </div>
+    );
+  }
+  
+  if (devices && devices.length === 0) {
+    return (
+      <div className="p-8 bg-gray-50 min-h-screen">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">List Devices</h1>
+          <p className="text-gray-600">All registered devices</p>
+        </div>
+        <div className="text-center py-10 text-lg text-gray-500">No devices found.</div>
+      </div>
+    );
+  }
+
+  // --- Table Rendering (only if devices has data) ---
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
+      
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">List Devices</h1>
         <p className="text-gray-600">All registered devices</p>
       </div>
 
-      {/* Devices List */}
+      {/* Devices List (Table) */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
+            
+            {/* Table Header */}
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Device Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Device ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Registered
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Updated
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Action
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
+                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> */}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
+            
+            {/* Table Body - Map devices here */}
             <tbody className="bg-white divide-y divide-gray-200">
-              {devices.map((device) => (
-                <tr key={device.id} className="hover:bg-gray-50">
+              {/* The devices variable is guaranteed to be an array with data here */}
+              {devices && devices.map((device) => (
+                <tr key={device.device_id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{device.name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{device.id}</div>
+                    <div className="text-sm text-gray-500">{device.device_id}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{device.registered}</div>
+                    <div className="text-sm text-gray-500">{device.createdAt}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{device.lastUpdated}</div>
+                    <div className="text-sm text-gray-500">{device.updatedAt}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  {/* <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         device.status === 'online'
@@ -86,10 +93,10 @@ export default function DevicesPage() {
                     >
                       {device.status === 'online' ? 'Online' : 'Offline'}
                     </span>
-                  </td>
+                  </td> */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <Link
-                      href={`/dashboard/devices/${device.id}`}
+                      href={`/dashboard/devices/${device.device_id}`}
                       className="text-blue-600 hover:text-blue-900"
                     >
                       View Details
@@ -104,5 +111,3 @@ export default function DevicesPage() {
     </div>
   );
 }
-
-

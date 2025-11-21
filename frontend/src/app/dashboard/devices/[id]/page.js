@@ -1,7 +1,9 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query'; // Import useQuery
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { apiService } from '../../../../lib/api'; // Ensure apiService is imported
 import {
   LineChart,
   Line,
@@ -11,60 +13,87 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
+
+// Helper function to format timestamp for charts and display
+const formatTime = (timestamp) => {
+  if (!timestamp) return 'N/A';
+  return new Date(timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+};
+
+const formatDate = (timestamp) => {
+  if (!timestamp) return 'N/A';
+  return new Date(timestamp).toLocaleString();
+};
 
 export default function DeviceDetailPage() {
   const params = useParams();
   const deviceId = params.id;
 
-  // Sample device data
-  const deviceData = {
-    id: deviceId,
-    name: 'esp_edb45',
-    registered: '11/4/2025, 8:09:55 AM',
-    lastUpdated: '11/4/2025, 8:13:55 AM',
-  };
+  const { data: device, isLoading: deviceLoading } = useQuery({
+    queryKey: ['device', deviceId],
+    queryFn: () => apiService.getDevice(deviceId),
+  });
 
-  // Sample air quality data
-  const airQualityData = [
-    { time: '8:00', ppm: 3.60944 },
-    { time: '8:05', ppm: 3.60944 },
-    { time: '8:10', ppm: 3.752697 },
-    { time: '8:15', ppm: 3.60944 },
-    { time: '8:20', ppm: 3.643211 },
-  ];
+  const { data: latestAirData, isLoading: airLoading } = useQuery({
+    queryKey: ['latest-air', deviceId],
+    queryFn: () => apiService.getLatestAirData(deviceId),
+    refetchInterval: 10000, // Refresh every 10 seconds
+  });
 
-  // Sample GPS data
-  const gpsData = [
-    { time: '8:00', lat: 0, lng: 0, speed: 0, satellites: 0 },
-    { time: '8:05', lat: 0, lng: 0, speed: 0, satellites: 0 },
-    { time: '8:10', lat: 0, lng: 0, speed: 0, satellites: 0 },
-    { time: '8:15', lat: 0, lng: 0, speed: 0, satellites: 0 },
-    { time: '8:20', lat: 0, lng: 0, speed: 0, satellites: 0 },
-  ];
+  const { data: latestGpsData, isLoading: gpsLoading } = useQuery({
+    queryKey: ['latest-gps', deviceId],
+    queryFn: () => apiService.getLatestGpsData(deviceId),
+    refetchInterval: 10000, // Refresh every 10 seconds
+  });
 
-  // Sample air quality history
-  const airQualityHistory = Array.from({ length: 10 }, (_, i) => ({
-    id: i + 1,
-    ppm: (3.5 + Math.random() * 0.5).toFixed(5),
-    ro: (5.4 + Math.random() * 0.2).toFixed(6),
-    status: 'BAIK',
-    timestamp: `11/4/2025, 8:${String(13 - i).padStart(2, '0')}:55 AM`,
-  }));
+  const { data: airDataHistory } = useQuery({
+    queryKey: ['air-history', deviceId],
+    queryFn: () => apiService.getAirData(deviceId),
+  });
 
-  // Sample GPS history
-  const gpsHistory = Array.from({ length: 10 }, (_, i) => ({
-    id: i + 1,
-    location: '0,0',
-    speed: 0,
-    satellites: 0,
-    timestamp: `11/4/2025, 8:${String(13 - i).padStart(2, '0')}:55 AM`,
-  }));
+  const { data: gpsDataHistory } = useQuery({
+    queryKey: ['gps-history', deviceId],
+    queryFn: () => apiService.getGpsData(deviceId),
+  });
+
+  // --- Transformation for Charts ---
+  // Reverse is used to ensure the chart displays oldest data on the left
+  const chartAirData = airDataHistory?.map(item => ({
+    time: formatTime(item.createdAt),
+    ppm: parseFloat(item.ppm)
+  })).reverse() || [];
+
+  const chartGpsData = gpsDataHistory?.map(item => ({
+    time: formatTime(item.createdAt),
+    speed: parseFloat(item.speed)
+  })).reverse() || [];
+
+
+  // --- Loading/Error States ---
+  if (deviceLoading || airLoading || gpsLoading) {
+    return (
+      <div className="p-8 bg-gray-50 min-h-screen text-center py-20 text-xl text-blue-600">
+        Loading device details...
+      </div>
+    );
+  }
+
+  // Handle case where device data couldn't be fetched
+  if (!device) {
+    return (
+      <div className="p-8 bg-gray-50 min-h-screen text-center py-20 text-xl text-red-600">
+        Error: Device not found or failed to load.
+      </div>
+    );
+  }
+  
+  const lastUpdatedTimestamp = latestAirData?.createdAt || latestGpsData?.createdAt || device.updatedAt;
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
+      
       {/* Back Button */}
       <Link
         href="/dashboard/devices"
@@ -78,15 +107,19 @@ export default function DeviceDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
           <div>
             <p className="text-sm text-gray-600 mb-1">Device Name</p>
-            <p className="text-lg font-semibold text-gray-800">esp_edb45</p>
+            {/* STATIC REPLACED: Use device.name */}
+            <p className="text-lg font-semibold text-gray-800">{device.name}</p> 
             <p className="text-sm text-gray-600 mt-4 mb-1">Registered</p>
-            <p className="text-sm text-gray-800">{deviceData.registered}</p>
+            {/* STATIC REPLACED: Use device.createdAt */}
+            <p className="text-sm text-gray-800">{formatDate(device.createdAt)}</p>
           </div>
           <div className="text-right">
             <p className="text-sm text-gray-600 mb-1">Device ID</p>
-            <p className="text-sm text-gray-800 break-all">{deviceData.id}</p>
+            {/* STATIC REPLACED: Use device.device_id */}
+            <p className="text-sm text-gray-800 break-all">{device.device_id}</p>
             <p className="text-sm text-gray-600 mt-4 mb-1">Last Updated</p>
-            <p className="text-sm text-gray-800">{deviceData.lastUpdated}</p>
+            {/* STATIC REPLACED: Use lastUpdatedTimestamp */}
+            <p className="text-sm text-gray-800">{formatDate(lastUpdatedTimestamp)}</p>
           </div>
         </div>
         <div className="flex justify-end">
@@ -105,13 +138,16 @@ export default function DeviceDetailPage() {
             <h2 className="text-xl font-bold text-gray-800">Air Quality</h2>
           </div>
           <div className="mb-4">
-            <p className="text-2xl font-bold text-gray-800">PPM: 3.60944</p>
-            <p className="text-xl text-gray-600">RO: 5.494842</p>
+            {/* STATIC REPLACED: Use latestAirData.ppm */}
+            <p className="text-2xl font-bold text-gray-800">PPM: {latestAirData?.ppm || 'N/A'}</p> 
+            {/* STATIC REPLACED: Use latestAirData.ro */}
+            <p className="text-xl text-gray-600">RO: {latestAirData?.ro || 'N/A'}</p> 
           </div>
-          <p className="text-sm text-gray-600">Last Update: {deviceData.lastUpdated}</p>
+          <p className="text-sm text-gray-600">Last Update: {formatDate(latestAirData?.createdAt)}</p>
           <div className="mt-4 h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={airQualityData}>
+              {/* STATIC REPLACED: Use chartAirData */}
+              <LineChart data={chartAirData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="time" />
                 <YAxis />
@@ -126,15 +162,17 @@ export default function DeviceDetailPage() {
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4">GPS Location</h2>
           <div className="mb-4">
-            <p className="text-lg text-gray-800">Latitude: 0</p>
-            <p className="text-lg text-gray-800">Longitude: 0</p>
-            <p className="text-lg text-gray-800">Speed: 0 km/h</p>
-            <p className="text-lg text-gray-800">Satellites: 0</p>
+            {/* STATIC REPLACED: Use latestGpsData */}
+            <p className="text-lg text-gray-800">Latitude: {latestGpsData?.lat || 'N/A'}</p>
+            <p className="text-lg text-gray-800">Longitude: {latestGpsData?.lng || 'N/A'}</p>
+            <p className="text-lg text-gray-800">Speed: {latestGpsData?.speed || 'N/A'} km/h</p>
+            <p className="text-lg text-gray-800">Satellites: {latestGpsData?.sats || 'N/A'}</p>
           </div>
-          <p className="text-sm text-gray-600 mb-4">Last Update: {deviceData.lastUpdated}</p>
+          <p className="text-sm text-gray-600 mb-4">Last Update: {formatDate(latestGpsData?.createdAt)}</p>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={gpsData}>
+              {/* STATIC REPLACED: Use chartGpsData */}
+              <AreaChart data={chartGpsData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="time" />
                 <YAxis />
@@ -148,14 +186,17 @@ export default function DeviceDetailPage() {
 
       {/* History Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
         {/* Air Data History */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Air Data History (47)</h2>
+          {/* STATIC REPLACED: Show actual count */}
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Air Data History ({airDataHistory?.length || 0})</h2> 
           <div className="max-h-96 overflow-y-auto">
             <div className="space-y-2">
-              {airQualityHistory.map((item) => (
+              {/* STATIC REPLACED: Use airDataHistory (with optional chaining and safety check) */}
+              {airDataHistory?.map((item) => ( 
                 <div
-                  key={item.id}
+                  key={item._id} // Use _id for the key
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
                 >
                   <div>
@@ -164,7 +205,8 @@ export default function DeviceDetailPage() {
                       {item.status}
                     </span>
                   </div>
-                  <span className="text-sm text-gray-600">{item.timestamp.split(', ')[1]}</span>
+                  {/* STATIC REPLACED: Use item.createdAt */}
+                  <span className="text-sm text-gray-600">{formatTime(item.createdAt)}</span> 
                 </div>
               ))}
             </div>
@@ -173,21 +215,26 @@ export default function DeviceDetailPage() {
 
         {/* GPS Data History */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">GPS Data History (47)</h2>
+          {/* STATIC REPLACED: Show actual count */}
+          <h2 className="text-xl font-bold text-gray-800 mb-4">GPS Data History ({gpsDataHistory?.length || 0})</h2> 
           <div className="max-h-96 overflow-y-auto">
             <div className="space-y-2">
-              {gpsHistory.map((item) => (
+              {/* STATIC REPLACED: Use gpsDataHistory (with optional chaining and safety check) */}
+              {gpsDataHistory?.map((item) => ( 
                 <div
-                  key={item.id}
+                  key={item._id} // Use _id for the key
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
                 >
                   <div>
-                    <span className="font-medium text-gray-800">{item.location}</span>
+                    <span className="font-medium text-gray-800">
+                        {item.lat}, {item.lng}
+                    </span>
                     <span className="ml-2 text-sm text-gray-600">
-                      Speed: {item.speed} km/h • Sats: {item.satellites}
+                      Speed: {item.speed} km/h • Sats: {item.sats}
                     </span>
                   </div>
-                  <span className="text-sm text-gray-600">{item.timestamp.split(', ')[1]}</span>
+                  {/* STATIC REPLACED: Use item.createdAt */}
+                  <span className="text-sm text-gray-600">{formatTime(item.createdAt)}</span> 
                 </div>
               ))}
             </div>
@@ -197,5 +244,3 @@ export default function DeviceDetailPage() {
     </div>
   );
 }
-
-
